@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Soporte Universitario</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="top-bar">
+        <div style="font-size: 0.7rem; letter-spacing: 3px;">UNIVERSIDAD</div>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <span style="font-size: 0.8rem; font-family: sans-serif;">SOPORTE VIRTUAL</span>
+            <div style="color:var(--accent-yellow); font-size: 1.2rem;">▲</div>
+        </div>
+    </div>
+
+    <main>
+        <div id="view-home">
+            <div class="hero">
+                <div class="hero-left">
+                    <h1>Soporte Técnico<br>Virtual</h1>
+                    <div>
+                        <button class="btn-white" onclick="ui.abrirDashboard()">Dashboard</button>
+                        <button class="btn-white" onclick="ui.showSection('view-reportar')">Reportar falla</button>
+                        <button class="btn-white" onclick="ui.showSection('view-login')">Panel técnico</button>
+                    </div>
+                </div>
+                <div class="hero-right"></div>
+            </div>
+        </div>
+
+        <div id="view-dashboard" class="section-container hidden">
+            <button class="btn-yellow" onclick="ui.showSection('view-home')">◀ VOLVER</button>
+            <div class="search-container">
+    <div class="search-wrapper">
+        <input type="text" id="busqueda-dash" placeholder="🔍 Filtrar fallas..." onkeyup="ui.filtrarReportes('dash')" class="main-search">
+        <button id="clear-dash" class="btn-clear hidden" onclick="ui.limpiarBusqueda('dash')">✖</button>
+    </div>
+</div>
+            <div class="stats-row">
+                <h1 style="margin-bottom: 5px;">Fallas reportadas</h1>
+
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span> Eficiencia de resolución </span>
+                    <span id="progress-percent"> 0% </span>
+            </div>
+    <div class="progress-bar-bg">
+        <div id="progress-fill" class="progress-bar-fill"></div>
+    </div>
+</div>
+                <div class="stat-container"><small>analizándose</small><div class="stat-box" id="d-pend" style="background:var(--danger-red)">0</div></div>
+                <div class="stat-container"><small>en proceso</small><div class="stat-box" id="d-proc" style="background:var(--warning-yellow)">0</div></div>
+                <div class="stat-container"><small>resueltas</small><div class="stat-box" id="d-res" style="background:var(--success-green)">0</div></div>
+            </div>
+            <table>
+                <thead><tr><th>ID</th><th>Problema</th><th>Ubicación</th><th>Descripción</th></tr></thead>
+                <tbody id="tabla-dashboard"></tbody>
+            </table>
+        </div>
+
+        <div id="view-reportar" class="section-container hidden">
+            <button class="btn-yellow" onclick="ui.showSection('view-home')">◀ VOLVER</button>
+            <div class="form-card">
+                <h2>NUEVO REPORTE</h2>
+                <form id="formIncidencia">
+                    <select id="p" required>
+                        <option value="" disabled selected>Tipo de falla</option>
+                        <option value="red">Red</option>
+                        <option value="hardware">Hardware</option>
+                        <option value="software">Software</option>
+                    </select>
+                    <input type="text" id="u" placeholder="Ubicación" maxlength="50" required>
+                    <textarea id="d" placeholder="Detalles (Máx 100)" maxlength="100"></textarea>
+                    <button type="submit" class="btn-white" style="background:var(--accent-yellow); width:100%">ENVIAR</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="view-login" class="section-container hidden">
+            <button class="btn-yellow" onclick="ui.showSection('view-home')">◀ VOLVER</button>
+            <div class="login-card">
+                <h2>ACCESO TÉCNICO</h2>
+                <input type="password" id="pass" placeholder="Contraseña">
+                <button class="btn-white" onclick="ui.validarLogin()" style="background:var(--accent-yellow); width:100%">ENTRAR</button>
+            </div>
+        </div>
+
+        <div id="view-panel" class="section-container hidden">
+            <button class="btn-yellow" onclick="ui.showSection('view-home')">◀ SALIR</button>
+            <div class="search-container">
+    <div class="search-wrapper">
+        <input type="text" id="busqueda-panel" placeholder="🔍 Buscar ID o Ubicación..." onkeyup="ui.filtrarReportes('panel')" class="main-search">
+        <button id="clear-panel" class="btn-clear hidden" onclick="ui.limpiarBusqueda('panel')">✖</button>
+    </div>
+</div>
+            <h2>GESTIÓN TÉCNICA</h2>
+            <table>
+                <thead><tr><th>ID</th><th>Problema</th><th>Ubicación</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody id="tabla-gestion"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div><strong>Soporte Técnico</strong> | Contacto: <a href="mailto:silvatrejof@gmail.com">silvatrejof@gmail.com</a></div>
+    </footer>
+
+    <script src="logic.js"></script>
+    <script src="ui.js"></script>
+</body>
+</html>
