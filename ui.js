@@ -81,31 +81,71 @@ const ui = {
         barText.innerText = `${porcentaje}%`;
     },
 
-    validarLogin: function() { if(document.getElementById('pass').value === "admin123") this.abrirPanel(); else alert("Error"); },
-    accionAvanzar: async function(id, est) { await logic.cambiarEstado(id, est === 'pendiente' ? 'proceso' : 'resuelto'); this.abrirPanel(); },
-    accionEliminar: async function(id) { if(confirm("¿Borrar?")) { await logic.eliminarReporte(id); this.abrirPanel(); } }
+    validarLogin: function() { 
+        if(document.getElementById('pass').value === "admin123") this.abrirPanel(); 
+        else alert("Contrase"); 
+    },
+
+    accionAvanzar: async function(id, est) { 
+        await logic.cambiarEstado(id, est === 'pendiente' ? 'proceso' : 'resuelto'); 
+        this.abrirPanel(); 
+    },
+
+    accionEliminar: async function(id) { 
+        if(confirm("¿Borrar?")) { 
+            await logic.eliminarReporte(id); 
+            this.abrirPanel(); 
+        } 
+    }
 };
+
+function validarContenidoOfensivo(texto) {
+    // Lista de palabras no permitidas (puedes agregar las que necesites)
+    const palabrasProhibidas = ["cumearon", "pene", "coño", "mamawebo", "puta", "mierda", "coño de tu madre", "imbécil", "idiota", "estúpido", "hijo de puta", "maricón", "zorra", "cabrón"];
+    
+    // Convertimos a minúsculas para una comparación uniforme
+    const textoMinusculas = texto.toLowerCase();
+
+    for (let palabra of palabrasProhibidas) {
+        // La expresión \b busca la palabra exacta para evitar bloquear palabras 
+        // legítimas que contienen la misma secuencia de letras.
+        const regex = new RegExp(`\\b${palabra}\\b`, 'gi');
+        if (regex.test(textoMinusculas)) {
+            return true; // Se encontró contenido ofensivo
+        }
+    }
+    return false;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('formIncidencia');
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            const descripcion = document.getElementById('d').value;
+
+            if (validarContenidoOfensivo(descripcion)) {
+                alert("🚫 El reporte contiene lenguaje inapropiado y no puede ser enviado.");
+                return; 
+            }
             
-            // Recolectamos solo los datos existentes
             const datos = {
-                problema: document.getElementById('p').value, // Ahora toma el valor del Select
+                problema: document.getElementById('p').value,
                 ubicacion: document.getElementById('u').value,
-                desc: document.getElementById('d').value,
-                // Eliminamos la línea de prioridad aquí
-                prioridad: "N/A" // Enviamos un valor por defecto para no romper el Backend
+                desc: descripcion,
+                prioridad: "N/A"
             };
 
-            await logic.agregarReporte(datos);
-            alert("✅ Reporte registrado exitosamente.");
-            
-            form.reset();
-            ui.showSection('view-home');
+            try {
+                await logic.agregarReporte(datos);
+
+                alert("✅ Reporte registrado exitosamente.");
+                form.reset();
+                ui.showSection('view-home');
+            } catch (error) {
+                alert("🚫 Error: " + error.message);
+            }
         });
     }
 });

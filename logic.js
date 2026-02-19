@@ -6,11 +6,17 @@ const logic = {
         return await res.json();
     },
     agregarReporte: async function(datos) {
-        await fetch(`${API_URL}/reportes`, {
+        const res = await fetch(`${API_URL}/reportes`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(datos)
         });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.detail || "Error al procesar el reporte.");
+        }
+        return await res.json();
     },
     cambiarEstado: async function(id, n) {
         await fetch(`${API_URL}/reportes/${id}?nuevo_estado=${n}`, { method: 'PATCH' });

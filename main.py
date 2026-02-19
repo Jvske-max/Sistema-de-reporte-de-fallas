@@ -6,6 +6,8 @@ from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel
 from typing import List, Optional
 import uuid
+from google.cloud import language_v1
+import os
 
 # Configuración de la Base de Datos SQLite
 SQLALCHEMY_DATABASE_URL = "sqlite:///./reportes.db"
@@ -48,13 +50,32 @@ class ReporteSchema(BaseModel):
     class Config:
         from_attributes = True
 
-# Dependencia para la sesión de DB
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+API_KEY = "AIzaSyA51lrrs2q2P82qsl4OQF7PZztqVia9e3g"
+
+def moderar_contenido(texto: str):
+    # Creamos el cliente de la API
+    client = language_v1.LanguageServiceClient(client_options={"api_key": API_KEY})
+    
+    document = language_v1.Document(
+        content=texto, 
+        type_=language_v1.Document.Type.PLAIN_TEXT,
+    )
+
+    response = client.moderate_text(document=document)
+    
+    for category in response.moderation_categories:
+        if category.name in ["Toxic", "Insult", "Profanity"] and category.confidence > 0.7:
+            return True 
+            
+    return False
+
 
 # --- ENDPOINTS ---
 
@@ -64,6 +85,12 @@ def obtener_reportes(db: Session = Depends(get_db)):
 
 @app.post("/reportes", response_model=ReporteSchema)
 def crear_reporte(reporte: ReporteSchema, db: Session = Depends(get_db)):
+    if moderar_contenido(reporte.desc):
+        raise HTTPException(
+            status_code=400, 
+            detail="El reporte contiene lenguaje inapropiado y no puede ser enviado."
+        )
+
     db_reporte = ReporteDB(
         id=str(uuid.uuid4())[:8],
         problema=reporte.problema,
