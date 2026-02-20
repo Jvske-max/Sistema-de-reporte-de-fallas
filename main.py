@@ -8,6 +8,7 @@ from typing import List, Optional
 import uuid
 from google.cloud import language_v1
 import os
+from googleapiclient import discovery
 
 # Configuración de la Base de Datos SQLite
 SQLALCHEMY_DATABASE_URL = "sqlite:///./reportes.db"
@@ -57,24 +58,36 @@ def get_db():
     finally:
         db.close()
 
-API_KEY = "AIzaSyA51lrrs2q2P82qsl4OQF7PZztqVia9e3g"
+API_KEY = "AIzaSyDaRyaBx8w3zGyti_2UpmLQyjYg-DZRZ7g"
 
 def moderar_contenido(texto: str):
-    # Creamos el cliente de la API
-    client = language_v1.LanguageServiceClient(client_options={"api_key": API_KEY})
-    
-    document = language_v1.Document(
-        content=texto, 
-        type_=language_v1.Document.Type.PLAIN_TEXT,
-    )
+    try:
+        # Construimos el cliente para Perspective
+        client = discovery.build(
+            "commentanalyzer",
+            "v1alpha1",
+            developerKey=API_KEY,
+            discoveryServiceUrl="https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1",
+            static_discovery=False,
+        )
 
-    response = client.moderate_text(document=document)
-    
-    for category in response.moderation_categories:
-        if category.name in ["Toxic", "Insult", "Profanity"] and category.confidence > 0.7:
-            return True 
-            
-    return False
+        solicitud = {
+            'comment': {'text': texto},
+            'languages': ['es'],
+            'requestedAttributes': {'TOXICITY': {}}
+        }
+
+        respuesta = client.comments().analyze(body=solicitud).execute()
+        
+        # Obtenemos la puntuación de toxicidad (0.0 a 1.0)
+        puntuacion = respuesta['attributeScores']['TOXICITY']['summaryScore']['value']
+        
+        # Bloqueamos si es mayor a 0.7
+        return puntuacion > 0.7
+        
+    except Exception as e:
+        print(f"Error en Perspective: {e}")
+        return False
 
 
 # --- ENDPOINTS ---
